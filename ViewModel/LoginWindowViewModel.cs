@@ -1,4 +1,4 @@
-﻿using GalaSoft.MvvmLight.CommandWpf;
+﻿using CommunityToolkit.Mvvm.Input;
 
 using Scheduler.Model.DBEntities;
 using Scheduler.Properties;
@@ -28,7 +28,7 @@ namespace Scheduler.ViewModel
             CreateNewUserCommand = new RelayCommand(async () => await CreateNewUser());
         }
 
-        public List<User> AllUsers
+        public static List<User> AllUsers
         {
             get
             {
@@ -44,9 +44,9 @@ namespace Scheduler.ViewModel
             }
         }
 
-        public RelayCommand CreateNewUserCommand { get; private set; }
+        public RelayCommand CreateNewUserCommand { get; }
 
-        public RelayCommand LoginCommand { get; private set; }
+        public RelayCommand LoginCommand { get; }
 
         public string Password
         {
@@ -71,6 +71,18 @@ namespace Scheduler.ViewModel
                     SetProperty(ref _userName, value);
                     OnPropertyChanged();
                 }
+            }
+        }
+
+        public static async Task GenerateData()
+        {
+            var context = new DBContext();
+
+            if (!context.Country.Any())
+            {
+                await SampleData.PopulateSampleData();
+                //_ = new SampleData();
+                //await SampleData.PopulateSampleData();
             }
         }
 
@@ -120,17 +132,6 @@ namespace Scheduler.ViewModel
             }
 
             await TryLogin();
-        }
-
-        public async Task GenerateData()
-        {
-            var context = new DBContext();
-
-            if (context.Country.Count() <= 0)
-            {
-                var sampleData = new SampleData();
-                await sampleData.PopulateSampleData();
-            }
         }
 
         public async Task LogLogin(bool success, string reason = null)

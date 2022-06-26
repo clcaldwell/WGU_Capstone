@@ -1,6 +1,6 @@
-﻿using System.Windows.Controls;
+﻿using Scheduler.ViewModel;
 
-using Scheduler.ViewModel;
+using System.Windows.Controls;
 
 namespace Scheduler.View
 {
@@ -11,6 +11,5 @@ namespace Scheduler.View
             this.DataContext = new ReportViewModel();
             InitializeComponent();
         }
-
     }
 }

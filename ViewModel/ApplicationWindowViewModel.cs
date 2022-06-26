@@ -1,15 +1,13 @@
-﻿using GalaSoft.MvvmLight.Command;
+﻿using CommunityToolkit.Mvvm.Input;
 
 namespace Scheduler.ViewModel
 {
-
     public class ApplicationWindowViewModel : ViewModelBase
     {
-        private ReminderViewModel _reminderViewModel = new ReminderViewModel();
-        private AppointmentViewModel _appointmentViewModel = new AppointmentViewModel();
-        private CustomerViewModel _customerViewModel = new CustomerViewModel();
-        private ReportViewModel _reportViewModel = new ReportViewModel();
-
+        private readonly AppointmentViewModel _appointmentViewModel = new();
+        private readonly CustomerViewModel _customerViewModel = new();
+        private readonly ReminderViewModel _reminderViewModel = new();
+        private readonly ReportViewModel _reportViewModel = new();
         private ViewModelBase _currentViewModel;
 
         public ApplicationWindowViewModel()
@@ -31,7 +29,7 @@ namespace Scheduler.ViewModel
             }
         }
 
-        public RelayCommand<string> NavCommand { get; private set; }
+        public RelayCommand<string> NavCommand { get; }
 
         private void OnNav(string destination)
         {
@@ -40,14 +38,15 @@ namespace Scheduler.ViewModel
                 case "Appointment":
                     CurrentViewModel = _appointmentViewModel;
                     break;
+
                 case "Customer":
                     CurrentViewModel = _customerViewModel;
                     break;
+
                 case "Report":
                     CurrentViewModel = _reportViewModel;
                     break;
             }
         }
-
     }
 }

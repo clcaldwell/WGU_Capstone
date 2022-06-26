@@ -1,53 +1,23 @@
+using Scheduler.Model.DBEntities;
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-using Scheduler.Model.DBEntities;
-
 namespace Scheduler.ViewModel
 {
     public class ReminderViewModel : ViewModelBase
     {
-        private string _reminderText;
-
         private Appointment _currentAppointment;
+        private string _reminderText;
 
         public ReminderViewModel()
         {
             GenerateReminder();
         }
 
-        public void GenerateReminder()
-        {
-            var Now = DateTime.Now.ToLocalTime();
-
-            // Lambda here is prefered, as it reduces the complexity of multiple if 
-            // statements and improves readability.
-            var remindAppointments = AllAppointments
-                .Where(appt => appt.Start.AddMinutes(-15) <= Now)
-                .Where(appt => appt.End >= Now);
-
-            if (remindAppointments.Count() > 0)
-            {
-                foreach (Appointment remindAppointment in remindAppointments)
-                {
-                    StringBuilder sb = new StringBuilder();
-                    sb.AppendLine($"Title: {remindAppointment.Title}" );
-                    sb.AppendLine($"Start Time: {remindAppointment.Start}" );
-                    sb.AppendLine($"End Time: {remindAppointment.End}" );
-                    sb.AppendLine($"Type: {remindAppointment.Type}" );
-                    ReminderText = sb.ToString();
-                }
-            }
-            else
-            {
-                ReminderText = "You have no appointments within the next 15 minutes.";
-            }
-
-        }
-
-        public List<Appointment> AllAppointments
+        public static List<Appointment> AllAppointments
         {
             get
             {
@@ -69,6 +39,19 @@ namespace Scheduler.ViewModel
             }
         }
 
+        public Appointment CurrentAppointment
+        {
+            get => _currentAppointment;
+            set
+            {
+                if (value != _currentAppointment)
+                {
+                    SetProperty(ref _currentAppointment, value);
+                    OnPropertyChanged();
+                }
+            }
+        }
+
         public string ReminderText
         {
             get => _reminderText;
@@ -82,16 +65,31 @@ namespace Scheduler.ViewModel
             }
         }
 
-        public Appointment CurrentAppointment
+        public void GenerateReminder()
         {
-            get => _currentAppointment;
-            set
+            var Now = DateTime.Now.ToLocalTime();
+
+            // Lambda here is prefered, as it reduces the complexity of multiple if
+            // statements and improves readability.
+            var remindAppointments = AllAppointments
+                .Where(appt => appt.Start.AddMinutes(-15) <= Now)
+                .Where(appt => appt.End >= Now);
+
+            if (remindAppointments.Count() > 0)
             {
-                if (value != _currentAppointment)
+                foreach (Appointment remindAppointment in remindAppointments)
                 {
-                    SetProperty(ref _currentAppointment, value);
-                    OnPropertyChanged();
+                    StringBuilder sb = new();
+                    sb.AppendLine($"Title: {remindAppointment.Title}");
+                    sb.AppendLine($"Start Time: {remindAppointment.Start}");
+                    sb.AppendLine($"End Time: {remindAppointment.End}");
+                    sb.AppendLine($"Type: {remindAppointment.Type}");
+                    ReminderText = sb.ToString();
                 }
+            }
+            else
+            {
+                ReminderText = "You have no appointments within the next 15 minutes.";
             }
         }
     }

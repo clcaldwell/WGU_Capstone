@@ -4,7 +4,7 @@ using System;
 
 namespace Scheduler.Model
 {
-    internal class AppointmentModel
+    internal static class AppointmentModel
     {
         public partial class Appointment
         {

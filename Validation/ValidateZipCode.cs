@@ -21,7 +21,7 @@ namespace Scheduler.Validation
                 );
                 if (!IsMatch)
                 {
-                    return new ValidationResult(false, 
+                    return new ValidationResult(false,
                         $"Invalid zip. Valid zips will be either\r\n" +
                         "5 digits, or 5 digits, a - , and then 4 digits.\r\n" +
                         "Valid Example: 12345\r\n" +

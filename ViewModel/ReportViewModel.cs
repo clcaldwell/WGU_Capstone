@@ -21,11 +21,11 @@ namespace Scheduler.ViewModel
         private bool _monthlyReportSelected;
         private object _tabControlSelectedItem;
 
-        public ObservableCollection<Appointment> AllAppointments
+        public static ObservableCollection<Appointment> AllAppointments
         {
             get
             {
-                DBContext context = new DBContext();
+                DBContext context = new();
                 List<Appointment> appointments = context.Appointment.ToList();
                 foreach (Appointment appointment in appointments)
                 {
@@ -37,37 +37,37 @@ namespace Scheduler.ViewModel
             }
             set
             {
-                DBContext context = new DBContext();
+                DBContext context = new();
                 context.Appointment.UpdateRange(value.ToList());
                 context.SaveChanges();
             }
         }
 
-        public ObservableCollection<Customer> AllCustomers
+        public static ObservableCollection<Customer> AllCustomers
         {
             get
             {
-                DBContext context = new DBContext();
+                DBContext context = new();
                 return new ObservableCollection<Customer>(context.Customer.ToList());
             }
             set
             {
-                DBContext context = new DBContext();
+                DBContext context = new();
                 context.Customer.UpdateRange(value.ToList());
                 context.SaveChanges();
             }
         }
 
-        public ObservableCollection<User> AllUsers
+        public static ObservableCollection<User> AllUsers
         {
             get
             {
-                DBContext context = new DBContext();
+                DBContext context = new();
                 return new ObservableCollection<User>(context.User.ToList());
             }
             set
             {
-                DBContext context = new DBContext();
+                DBContext context = new();
                 context.User.UpdateRange(value.ToList());
                 context.SaveChanges();
             }
@@ -163,7 +163,7 @@ namespace Scheduler.ViewModel
 
         private async Task GenerateConsultantSchedule()
         {
-            List<ConsultantReportModel> consultantReport = new List<ConsultantReportModel>();
+            List<ConsultantReportModel> consultantReport = new();
 
             foreach (User consultant in AllUsers)
             {
@@ -177,7 +177,7 @@ namespace Scheduler.ViewModel
                                 Appointment = appt.Start,
                                 AppointmentType = appt.Type,
                                 CustomerName =
-                                    AllCustomers.Where(cust => appt.CustomerId == cust.CustomerId).FirstOrDefault().CustomerName
+                                    AllCustomers.FirstOrDefault(cust => appt.CustomerId == cust.CustomerId).CustomerName
                             }
                         )
                     );
@@ -187,7 +187,7 @@ namespace Scheduler.ViewModel
 
         private async Task GenerateFraudReport()
         {
-            StringBuilder text = new StringBuilder();
+            StringBuilder text = new();
             text.AppendLine("Fraud Detection: Customers with Most Lunch appointments (All Time)");
             text.AppendLine("");
 
@@ -195,7 +195,7 @@ namespace Scheduler.ViewModel
             Customer frequentCustomer = null;
             foreach (Customer customer in AllCustomers)
             {
-                int currentCount = AllAppointments.Where(appt => appt.CustomerId == customer.CustomerId).Count();
+                int currentCount = AllAppointments.Count(appt => appt.CustomerId == customer.CustomerId);
                 if (currentCount > counter)
                 {
                     counter = currentCount;
@@ -203,8 +203,8 @@ namespace Scheduler.ViewModel
                 }
             }
 
-            text.AppendLine($"Number of Lunches:\t{counter}");
-            text.AppendLine($"Frequent Customer:\t{frequentCustomer.CustomerName}");
+            text.Append("Number of Lunches:\t").Append(counter).AppendLine();
+            text.Append("Frequent Customer:\t").AppendLine(frequentCustomer.CustomerName);
 
             IEnumerable<Appointment> listOfFrequentLunches = AllAppointments
                 .Where(appt => appt.CustomerId == frequentCustomer.CustomerId)
@@ -212,7 +212,7 @@ namespace Scheduler.ViewModel
 
             foreach (Appointment appt in listOfFrequentLunches)
             {
-                text.AppendLine($"Date:\t{appt.Start.Date:MM/dd/yyyy}");
+                text.Append("Date:\t").AppendFormat("{0:MM/dd/yyyy}", appt.Start.Date).AppendLine();
             }
 
             FraudReport = text.ToString();
@@ -220,14 +220,17 @@ namespace Scheduler.ViewModel
 
         private async Task GenerateMonthlyReport()
         {
-            DateTime thisMonth = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
+            DateTime thisMonth = new(DateTime.Now.Year, DateTime.Now.Month, 1);
             DateTime previousMonth = thisMonth.AddMonths(-1);
             DateTime nextMonth = thisMonth.AddMonths(2).AddMilliseconds(-1);
-            List<int> months = new List<int>() {
-                previousMonth.Month, thisMonth.Month, nextMonth.Month
+            List<int> months = new()
+            {
+                previousMonth.Month,
+                thisMonth.Month,
+                nextMonth.Month
             };
 
-            List<MonthlyReportModel> monthlyReport = new List<MonthlyReportModel>();
+            List<MonthlyReportModel> monthlyReport = new();
 
             List<Appointment> currentAppointments = AllAppointments.Where(appt =>
                 appt.Start.Month >= previousMonth.Month && appt.Start.Month <= nextMonth.Month)

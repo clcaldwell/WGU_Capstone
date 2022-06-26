@@ -8,14 +8,9 @@ namespace Scheduler
     {
         public event PropertyChangedEventHandler PropertyChanged = delegate { };
 
-        protected virtual void SetProperty<T>(ref T member, T val,
-            [CallerMemberName] string propertyName = null)
-        {
-            if (object.Equals(member, val)) return;
+        string IDataErrorInfo.Error => throw new NotImplementedException();
 
-            member = val;
-            PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
-        }
+        string IDataErrorInfo.this[string columnName] => throw new NotImplementedException();
 
         protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
@@ -23,8 +18,13 @@ namespace Scheduler
                 new PropertyChangedEventArgs(propertyName));
         }
 
-        string IDataErrorInfo.Error => throw new NotImplementedException();
+        protected virtual void SetProperty<T>(ref T member, T val,
+                                    [CallerMemberName] string propertyName = null)
+        {
+            if (object.Equals(member, val)) return;
 
-        string IDataErrorInfo.this[string columnName] => throw new NotImplementedException();
+            member = val;
+            PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+        }
     }
 }

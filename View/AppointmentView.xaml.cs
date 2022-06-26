@@ -1,6 +1,6 @@
-﻿using System.Windows.Controls;
+﻿using Scheduler.ViewModel;
 
-using Scheduler.ViewModel;
+using System.Windows.Controls;
 
 namespace Scheduler.View
 {

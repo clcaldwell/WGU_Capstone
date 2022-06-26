@@ -10,13 +10,14 @@ namespace Scheduler.Services
 {
     public class SampleData
     {
-        public async Task PopulateSampleData()
+        public static async Task PopulateSampleData()
         {
-            DBContext context = new DBContext();
+            DBContext context = new();
             var random = new Random();
 
             // Add Countries
-            List<string> countries = new List<string> {
+            List<string> countries = new()
+            {
                 "US",
                 "Canada"
             };
@@ -36,7 +37,8 @@ namespace Scheduler.Services
             await context.SaveChangesAsync();
 
             // Add Cities
-            List<City> cities = new List<City> {
+            List<City> cities = new()
+            {
                 new City { City1 = "New York", Country = context.Country.Where(x => x.Country1 == "US").First() },
                 new City { City1 = "Los Angeles", Country = context.Country.Where(x => x.Country1 == "US").First() },
                 new City { City1 = "Toronto", Country = context.Country.Where(x => x.Country1 == "Canada").First() },
@@ -53,7 +55,8 @@ namespace Scheduler.Services
             await context.SaveChangesAsync();
 
             // Add Addresses
-            List<Address> addresses = new List<Address> {
+            List<Address> addresses = new()
+            {
                 new Address {
                     Address1 = "123 Main",
                     Address2 = "",
@@ -75,7 +78,7 @@ namespace Scheduler.Services
             };
             foreach (Address address in addresses)
             {
-                StringBuilder phone = new StringBuilder();
+                StringBuilder phone = new();
                 _ = phone.Append(random.Next(100, 999).ToString());
                 _ = phone.Append("-");
                 _ = phone.Append(random.Next(100, 999).ToString());
@@ -93,7 +96,8 @@ namespace Scheduler.Services
             await context.SaveChangesAsync();
 
             // Add Customers
-            List<Customer> customers = new List<Customer> {
+            List<Customer> customers = new()
+            {
                 new Customer { CustomerName = "Barry Allen", Active = 1 },
                 new Customer { CustomerName = "Clark Kent", Active = 1 },
                 new Customer { CustomerName = "Peter Parker", Active = 1 },
@@ -111,7 +115,8 @@ namespace Scheduler.Services
             }
             await context.SaveChangesAsync();
 
-            List<User> users = new List<User> {
+            List<User> users = new()
+            {
                 new User { UserName = "marco", Password = "marco", Active = 1 },
                 new User { UserName = "polo", Password = "polo", Active = 1 },
                 new User { UserName = "kublai", Password = "kublai", Active = 1 },
@@ -128,9 +133,9 @@ namespace Scheduler.Services
             await context.SaveChangesAsync();
 
             // Add apointments
-            List<string> apptType = new List<string> { "Scrum", "Presentation", "Kick-Off", "Client Meeting" };
-            List<int> startMin = new List<int> { 0, 15, 30, 45 };
-            List<int> endMin = new List<int> { 15, 30, 45, 60, 90 };
+            List<string> apptType = new() { "Scrum", "Presentation", "Kick-Off", "Client Meeting" };
+            List<int> startMin = new() { 0, 15, 30, 45 };
+            List<int> endMin = new() { 15, 30, 45, 60, 90 };
             for (int i = 0; i < 50; i++)
             {
                 DateTime start = DateTime.Today
@@ -139,7 +144,7 @@ namespace Scheduler.Services
                     .AddMinutes(startMin[random.Next(startMin.Count())]);
                 DateTime end = start.AddMinutes(endMin[random.Next(startMin.Count())]);
 
-                Appointment appointment = new Appointment { };
+                Appointment appointment = new() { };
 
                 appointment.CustomerId = context.Customer.ToList()[random.Next(context.Customer.Count())].CustomerId;
                 appointment.UserId = context.User.ToList()[random.Next(context.Customer.Count())].UserId;

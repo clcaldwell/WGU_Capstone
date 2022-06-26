@@ -6,8 +6,8 @@ namespace Scheduler.Validation
 {
     public class ValidateAppointmentWithinBusinessHours : ValidationRule
     {
-        public int StartHour = DateTime.Parse("09:00").Hour;
         public int EndHour = DateTime.Parse("17:00").Hour;
+        public int StartHour = DateTime.Parse("09:00").Hour;
 
         public ValidateAppointmentWithinBusinessHours()
         {
@@ -40,6 +40,5 @@ namespace Scheduler.Validation
 
             return ValidationResult.ValidResult;
         }
-
     }
 }

@@ -14,13 +14,12 @@ namespace Scheduler.Model.DBEntities
             City = new HashSet<City>();
         }
 
-        public int CountryId { get; set; }
+        public virtual ICollection<City> City { get; set; }
         public string Country1 { get; set; }
+        public int CountryId { get; set; }
         public DateTime CreateDate { get; set; }
         public string CreatedBy { get; set; }
         public DateTime LastUpdate { get; set; }
         public string LastUpdateBy { get; set; }
-
-        public virtual ICollection<City> City { get; set; }
     }
 }
