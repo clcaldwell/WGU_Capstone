@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
 
@@ -18,19 +19,26 @@ namespace Scheduler.ViewModel
     public class AppointmentViewModel : ViewModelBase
     {
         private ObservableCollection<Appointment> _allappointmentsloaded;
+        private string _customerIdSearchOption;
+        private string _customerIdSearchText;
         private int _customerIndex;
+        private string _descriptionSearchOption;
+        private string _descriptionSearchText;
         private bool _isAddMode = false;
-        private bool _isCalenderByMonthDisplay = false;
-        private bool _isCalenderBySearchDisplay = false;
-        private bool _isCalenderByWeekDisplay = false;
+        private bool _isAllCalendar;
+        private bool _isCustomerIdSearchEnabled;
+        private bool _isDescriptionSearchEnabled;
         private bool _isEditMode = false;
-        private bool _isGrid;
-        private bool _isGridDisplay = true;
+        private bool _isLocationSearchEnabled;
         private bool _isModifyAppointment;
         private bool _isMonthlyCalendar;
         private bool _isSearchCalendar;
+        private bool _isTitleSearchEnabled;
+        private bool _isTypeSearchEnabled;
         private bool _isViewMode = true;
         private bool _isWeeklyCalendar;
+        private string _locationSearchOption;
+        private string _locationSearchText;
         private ObservableCollection<Appointment> _monthlyAppointments;
         private ObservableCollection<Appointment> _searchAppointments;
         private Appointment _selectedappointment;
@@ -40,6 +48,10 @@ namespace Scheduler.ViewModel
         private string _selectedSearchType;
         private string _selectedYear = DateTime.Today.Year.ToString();
         private object _tabControlSelectedItem;
+        private string _titleSearchOption;
+        private string _titleSearchText;
+        private string _typeSearchOption;
+        private string _typeSearchText;
         private ObservableCollection<Appointment> _weeklyAppointments;
 
         public AppointmentViewModel()
@@ -51,15 +63,7 @@ namespace Scheduler.ViewModel
             SaveAppointmentCommand = new RelayCommand<Appointment>(OnSaveButton);
             CancelAppointmentCommand = new RelayCommand<Appointment>(OnCancelButton);
 
-            SetCalendarBySearchCommand = new RelayCommand(async () => await InvokeFilter());
-        }
-
-        private enum Display
-        {
-            Grid,
-            CalenderByMonth,
-            CalendarByWeek,
-            CalendarBySearch
+            ResetSearchFilterCommand = new RelayCommand(async () => await ResetSearchFilter());
         }
 
         private enum Mode
@@ -100,41 +104,39 @@ namespace Scheduler.ViewModel
             }
         }
 
-        public static ObservableCollection<string> Months
+        public static ObservableCollection<string> Months => new()
         {
-            get
-            {
-                return new ObservableCollection<string>()
-                {
-                    "January",
-                    "February",
-                    "March",
-                    "April",
-                    "May",
-                    "June",
-                    "July",
-                    "August",
-                    "September",
-                    "October",
-                    "November",
-                    "December"
-                };
-            }
-        }
+            "January",
+            "February",
+            "March",
+            "April",
+            "May",
+            "June",
+            "July",
+            "August",
+            "September",
+            "October",
+            "November",
+            "December"
+        };
 
-        public static ObservableCollection<string> SearchType
+        public static ObservableCollection<string> SearchOptions => new()
         {
-            get
-            {
-                return new ObservableCollection<string>() {
-                    "CustomerId",
-                    "Appt Type",
-                    "Title",
-                    "Location",
-                    "Description"
-                };
-            }
-        }
+            " ",
+            "Matches Regex",
+            "Does Not Match Regex",
+            "Contains",
+            "Does Not Contain"
+        };
+
+        public static ObservableCollection<string> SearchTypes => new()
+        {
+            "CustomerId",
+            "Appt Type",
+            "Title",
+            "Location",
+            "Description"
+        };
 
         public static ObservableCollection<string> Years
         {
@@ -169,6 +171,34 @@ namespace Scheduler.ViewModel
 
         public RelayCommand<Appointment> CancelAppointmentCommand { get; }
 
+        public string CustomerIdSearchOption
+        {
+            get => _customerIdSearchOption;
+            set
+            {
+                if (value != _customerIdSearchOption)
+                {
+                    SetProperty(ref _customerIdSearchOption, value);
+                    OnPropertyChanged();
+                    SearchOptionChange("CustomerId", value);
+                }
+            }
+        }
+
+        public string CustomerIdSearchText
+        {
+            get => _customerIdSearchText;
+            set
+            {
+                if (value != _customerIdSearchText)
+                {
+                    SetProperty(ref _customerIdSearchText, value);
+                    OnPropertyChanged();
+                    InvokeFilter();
+                }
+            }
+        }
+
         public int CustomerIndex
         {
             get => _customerIndex;
@@ -183,6 +213,34 @@ namespace Scheduler.ViewModel
         }
 
         public RelayCommand<Appointment> DeleteAppointmentCommand { get; }
+
+        public string DescriptionSearchOption
+        {
+            get => _descriptionSearchOption;
+            set
+            {
+                if (value != _descriptionSearchOption)
+                {
+                    SetProperty(ref _descriptionSearchOption, value);
+                    OnPropertyChanged();
+                    SearchOptionChange("Description", value);
+                }
+            }
+        }
+
+        public string DescriptionSearchText
+        {
+            get => _descriptionSearchText;
+            set
+            {
+                if (value != _descriptionSearchText)
+                {
+                    SetProperty(ref _descriptionSearchText, value);
+                    OnPropertyChanged();
+                    InvokeFilter();
+                }
+            }
+        }
 
         public RelayCommand<Appointment> EditAppointmentCommand { get; }
 
@@ -201,40 +259,40 @@ namespace Scheduler.ViewModel
             }
         }
 
-        public bool IsCalenderByMonthDisplay
+        public bool IsAllCalendar
         {
-            get => _isCalenderByMonthDisplay;
+            get => _isAllCalendar;
             set
             {
-                if (value != _isCalenderByMonthDisplay)
+                if (value != _isAllCalendar)
                 {
-                    SetProperty(ref _isCalenderByMonthDisplay, value);
+                    SetProperty(ref _isAllCalendar, value);
                     OnPropertyChanged();
                 }
             }
         }
 
-        public bool IsCalenderBySearchDisplay
+        public bool IsCustomerIdSearchEnabled
         {
-            get => _isCalenderBySearchDisplay;
+            get => _isCustomerIdSearchEnabled;
             set
             {
-                if (value != _isCalenderBySearchDisplay)
+                if (value != _isCustomerIdSearchEnabled)
                 {
-                    SetProperty(ref _isCalenderBySearchDisplay, value);
+                    SetProperty(ref _isCustomerIdSearchEnabled, value);
                     OnPropertyChanged();
                 }
             }
         }
 
-        public bool IsCalenderByWeekDisplay
+        public bool IsDescriptionSearchEnabled
         {
-            get => _isCalenderByWeekDisplay;
+            get => _isDescriptionSearchEnabled;
             set
             {
-                if (value != _isCalenderByWeekDisplay)
+                if (value != _isDescriptionSearchEnabled)
                 {
-                    SetProperty(ref _isCalenderByWeekDisplay, value);
+                    SetProperty(ref _isDescriptionSearchEnabled, value);
                     OnPropertyChanged();
                 }
             }
@@ -253,27 +311,14 @@ namespace Scheduler.ViewModel
             }
         }
 
-        public bool IsGrid
+        public bool IsLocationSearchEnabled
         {
-            get => _isGrid;
+            get => _isLocationSearchEnabled;
             set
             {
-                if (value != _isGrid)
+                if (value != _isLocationSearchEnabled)
                 {
-                    SetProperty(ref _isGrid, value);
-                    OnPropertyChanged();
-                }
-            }
-        }
-
-        public bool IsGridDisplay
-        {
-            get => _isGridDisplay;
-            set
-            {
-                if (value != _isGridDisplay)
-                {
-                    SetProperty(ref _isGridDisplay, value);
+                    SetProperty(ref _isLocationSearchEnabled, value);
                     OnPropertyChanged();
                 }
             }
@@ -318,6 +363,32 @@ namespace Scheduler.ViewModel
             }
         }
 
+        public bool IsTitleSearchEnabled
+        {
+            get => _isTitleSearchEnabled;
+            set
+            {
+                if (value != _isTitleSearchEnabled)
+                {
+                    SetProperty(ref _isTitleSearchEnabled, value);
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public bool IsTypeSearchEnabled
+        {
+            get => _isTypeSearchEnabled;
+            set
+            {
+                if (value != _isTypeSearchEnabled)
+                {
+                    SetProperty(ref _isTypeSearchEnabled, value);
+                    OnPropertyChanged();
+                }
+            }
+        }
+
         public bool IsViewMode
         {
             get => _isViewMode;
@@ -344,6 +415,34 @@ namespace Scheduler.ViewModel
             }
         }
 
+        public string LocationSearchOption
+        {
+            get => _locationSearchOption;
+            set
+            {
+                if (value != _locationSearchOption)
+                {
+                    SetProperty(ref _locationSearchOption, value);
+                    OnPropertyChanged();
+                    SearchOptionChange("Location", value);
+                }
+            }
+        }
+
+        public string LocationSearchText
+        {
+            get => _locationSearchText;
+            set
+            {
+                if (value != _locationSearchText)
+                {
+                    SetProperty(ref _locationSearchText, value);
+                    OnPropertyChanged();
+                    InvokeFilter();
+                }
+            }
+        }
+
         public ObservableCollection<Appointment> MonthlyAppointments
         {
             get => _monthlyAppointments; set
@@ -355,6 +454,8 @@ namespace Scheduler.ViewModel
                 }
             }
         }
+
+        public RelayCommand ResetSearchFilterCommand { get; }
 
         public RelayCommand<Appointment> SaveAppointmentCommand { get; }
 
@@ -430,7 +531,6 @@ namespace Scheduler.ViewModel
                 {
                     SetProperty(ref _selectedSearchText, value);
                     OnPropertyChanged();
-                    InvokeFilter();
                 }
             }
         }
@@ -483,6 +583,62 @@ namespace Scheduler.ViewModel
             }
         }
 
+        public string TitleSearchOption
+        {
+            get => _titleSearchOption;
+            set
+            {
+                if (value != _titleSearchOption)
+                {
+                    SetProperty(ref _titleSearchOption, value);
+                    OnPropertyChanged();
+                    SearchOptionChange("Title", value);
+                }
+            }
+        }
+
+        public string TitleSearchText
+        {
+            get => _titleSearchText;
+            set
+            {
+                if (value != _titleSearchText)
+                {
+                    SetProperty(ref _titleSearchText, value);
+                    OnPropertyChanged();
+                    InvokeFilter();
+                }
+            }
+        }
+
+        public string TypeSearchOption
+        {
+            get => _typeSearchOption;
+            set
+            {
+                if (value != _typeSearchOption)
+                {
+                    SetProperty(ref _typeSearchOption, value);
+                    OnPropertyChanged();
+                    SearchOptionChange("Type", value);
+                }
+            }
+        }
+
+        public string TypeSearchText
+        {
+            get => _typeSearchText;
+            set
+            {
+                if (value != _typeSearchText)
+                {
+                    SetProperty(ref _typeSearchText, value);
+                    OnPropertyChanged();
+                    InvokeFilter();
+                }
+            }
+        }
+
         public ObservableCollection<Appointment> WeeklyAppointments
         {
             get => _weeklyAppointments;
@@ -531,6 +687,7 @@ namespace Scheduler.ViewModel
                 appointment.End = appointment.End.ToLocalTime();
             }
             AllAppointmentsLoaded = new ObservableCollection<Appointment>(appointments);
+            SearchAppointments = new ObservableCollection<Appointment>(appointments);
 
             DateTime Now = DateTime.Now.ToLocalTime();
 
@@ -549,45 +706,173 @@ namespace Scheduler.ViewModel
         {
             SetMode(Mode.View);
 
-            List<Appointment> appointments = new();
+            List<Appointment> appointments = AllAppointments;
 
-            if (!string.IsNullOrWhiteSpace(SelectedSearchText) && !string.IsNullOrWhiteSpace(SelectedSearchType))
+            if (IsCustomerIdSearchEnabled)
             {
-                switch (SelectedSearchType)
+                switch (CustomerIdSearchOption)
                 {
-                    case "CustomerId":
-                        appointments.AddRange(
-                            AllAppointments
-                                .Where(appt => appt.CustomerId.ToString().Contains(SelectedSearchText, StringComparison.OrdinalIgnoreCase)).ToList());
+                    case "Matches Regex":
+                        appointments.RemoveAll(appt =>
+                            !Regex.IsMatch(appt.CustomerId.ToString(), CustomerIdSearchText, RegexOptions.IgnoreCase));
                         break;
 
-                    case "Type":
-                        appointments.AddRange(
-                            AllAppointments
-                                .Where(appt => appt.Type.Contains(SelectedSearchText, StringComparison.OrdinalIgnoreCase)).ToList());
+                    case "Does Not Match Regex":
+                        appointments.RemoveAll(appt =>
+                            Regex.IsMatch(appt.CustomerId.ToString(), CustomerIdSearchText, RegexOptions.IgnoreCase));
                         break;
 
-                    case "Title":
-                        appointments.AddRange(
-                            AllAppointments
-                                .Where(appt => appt.Title.Contains(SelectedSearchText, StringComparison.OrdinalIgnoreCase)).ToList());
+                    case "Contains":
+                        appointments.RemoveAll(appt =>
+                            !appt.CustomerId.ToString().Contains(CustomerIdSearchText, StringComparison.OrdinalIgnoreCase));
                         break;
 
-                    case "Location":
-                        appointments.AddRange(
-                            AllAppointments
-                                .Where(appt => appt.Location.Contains(SelectedSearchText, StringComparison.OrdinalIgnoreCase)).ToList());
+                    case "Does Not Contain":
+                        appointments.RemoveAll(appt =>
+                            appt.CustomerId.ToString().Contains(CustomerIdSearchText, StringComparison.OrdinalIgnoreCase));
+                        break;
+                }
+            }
+            if (IsTypeSearchEnabled)
+            {
+                switch (TypeSearchOption)
+                {
+                    case "Matches Regex":
+                        appointments.RemoveAll(appt =>
+                            !Regex.IsMatch(appt.Type, TypeSearchText, RegexOptions.IgnoreCase));
                         break;
 
-                    case "Description":
-                        appointments.AddRange(
-                            AllAppointments
-                                .Where(appt => appt.Description.Contains(SelectedSearchText, StringComparison.OrdinalIgnoreCase)).ToList());
+                    case "Does Not Match Regex":
+                        appointments.RemoveAll(appt =>
+                            Regex.IsMatch(appt.Type, TypeSearchText, RegexOptions.IgnoreCase));
+                        break;
+
+                    case "Contains":
+                        appointments.RemoveAll(appt =>
+                            !appt.Type.Contains(TypeSearchText, StringComparison.OrdinalIgnoreCase));
+                        break;
+
+                    case "Does Not Contain":
+                        appointments.RemoveAll(appt =>
+                            appt.Type.Contains(TypeSearchText, StringComparison.OrdinalIgnoreCase));
+                        break;
+                }
+            }
+            if (IsTitleSearchEnabled)
+            {
+                switch (TitleSearchOption)
+                {
+                    case "Matches Regex":
+                        appointments.RemoveAll(appt =>
+                            !Regex.IsMatch(appt.Title, TitleSearchText, RegexOptions.IgnoreCase));
+                        break;
+
+                    case "Does Not Match Regex":
+                        appointments.RemoveAll(appt =>
+                            Regex.IsMatch(appt.Title, TitleSearchText, RegexOptions.IgnoreCase));
+                        break;
+
+                    case "Contains":
+                        appointments.RemoveAll(appt =>
+                            !appt.Title.Contains(TitleSearchText, StringComparison.OrdinalIgnoreCase));
+                        break;
+
+                    case "Does Not Contain":
+                        appointments.RemoveAll(appt =>
+                            appt.Title.Contains(TitleSearchText, StringComparison.OrdinalIgnoreCase));
+                        break;
+                }
+            }
+            if (IsLocationSearchEnabled)
+            {
+                switch (LocationSearchOption)
+                {
+                    case "Matches Regex":
+                        appointments.RemoveAll(appt =>
+                            !Regex.IsMatch(appt.Location, LocationSearchText, RegexOptions.IgnoreCase));
+                        break;
+
+                    case "Does Not Match Regex":
+                        appointments.RemoveAll(appt =>
+                            Regex.IsMatch(appt.Location, LocationSearchText, RegexOptions.IgnoreCase));
+                        break;
+
+                    case "Contains":
+                        appointments.RemoveAll(appt =>
+                            !appt.Location.Contains(LocationSearchText, StringComparison.OrdinalIgnoreCase));
+                        break;
+
+                    case "Does Not Contain":
+                        appointments.RemoveAll(appt =>
+                            appt.Location.Contains(LocationSearchText, StringComparison.OrdinalIgnoreCase));
+                        break;
+                }
+            }
+            if (IsDescriptionSearchEnabled)
+            {
+                switch (DescriptionSearchOption)
+                {
+                    case "Matches Regex":
+                        appointments.RemoveAll(appt =>
+                            !Regex.IsMatch(appt.Description, DescriptionSearchText, RegexOptions.IgnoreCase));
+                        break;
+
+                    case "Does Not Match Regex":
+                        appointments.RemoveAll(appt =>
+                            Regex.IsMatch(appt.Description, DescriptionSearchText, RegexOptions.IgnoreCase));
+                        break;
+
+                    case "Contains":
+                        appointments.RemoveAll(appt =>
+                            !appt.Description.Contains(DescriptionSearchText, StringComparison.OrdinalIgnoreCase));
+                        break;
+
+                    case "Does Not Contain":
+                        appointments.RemoveAll(appt =>
+                            appt.Description.Contains(DescriptionSearchText, StringComparison.OrdinalIgnoreCase));
                         break;
                 }
             }
 
             SearchAppointments = new ObservableCollection<Appointment>(appointments);
+
+            //if (!string.IsNullOrWhiteSpace(SelectedSearchText) && !string.IsNullOrWhiteSpace(SelectedSearchType))
+            //{
+            //    switch (SelectedSearchType)
+            //    {
+            //        case "CustomerId":
+            //            appointments.AddRange(
+            //                AllAppointments
+            //                    .Where(appt => appt.CustomerId.ToString().Contains(SelectedSearchText, StringComparison.OrdinalIgnoreCase)).ToList());
+            //            break;
+
+            //        case "Type":
+            //            appointments.AddRange(
+            //                AllAppointments
+            //                    .Where(appt => appt.Type.Contains(SelectedSearchText, StringComparison.OrdinalIgnoreCase)).ToList());
+            //            break;
+
+            //        case "Title":
+            //            appointments.AddRange(
+            //                AllAppointments
+            //                    .Where(appt => appt.Title.Contains(SelectedSearchText, StringComparison.OrdinalIgnoreCase)).ToList());
+            //            break;
+
+            //        case "Location":
+            //            appointments.AddRange(
+            //                AllAppointments
+            //                    .Where(appt => appt.Location.Contains(SelectedSearchText, StringComparison.OrdinalIgnoreCase)).ToList());
+            //            break;
+
+            //        case "Description":
+            //            appointments.AddRange(
+            //                AllAppointments
+            //                    .Where(appt => appt.Description.Contains(SelectedSearchText, StringComparison.OrdinalIgnoreCase)).ToList());
+            //            break;
+            //    }
+            //}
+
+            //SearchAppointments = new ObservableCollection<Appointment>(appointments);
         }
 
         private void OnAddButton(Appointment appointment)
@@ -688,36 +973,52 @@ namespace Scheduler.ViewModel
             SetMode(Mode.View);
         }
 
-        private void SetDisplay(Display display)
+        private async Task ResetSearchFilter()
         {
-            if (display == Display.Grid)
+            CustomerIdSearchText = null;
+            TypeSearchText = null;
+            TitleSearchText = null;
+            LocationSearchText = null;
+            DescriptionSearchText = null;
+
+            CustomerIdSearchOption = null;
+            TypeSearchOption = null;
+            TitleSearchOption = null;
+            LocationSearchOption = null;
+            DescriptionSearchOption = null;
+        }
+
+        private async Task SearchOptionChange(string field, string value)
+        {
+            switch (field)
             {
-                IsGridDisplay = true;
-                IsCalenderByMonthDisplay = false;
-                IsCalenderByWeekDisplay = false;
-                IsCalenderBySearchDisplay = false;
+                case "CustomerId":
+                    IsCustomerIdSearchEnabled = !string.IsNullOrWhiteSpace(value);
+                    if (!IsCustomerIdSearchEnabled) { CustomerIdSearchText = null; }
+                    break;
+
+                case "Type":
+                    IsTypeSearchEnabled = !string.IsNullOrWhiteSpace(value);
+                    if (!IsTypeSearchEnabled) { TypeSearchText = null; }
+                    break;
+
+                case "Title":
+                    IsTitleSearchEnabled = !string.IsNullOrWhiteSpace(value);
+                    if (!IsTitleSearchEnabled) { TitleSearchText = null; }
+                    break;
+
+                case "Location":
+                    IsLocationSearchEnabled = !string.IsNullOrWhiteSpace(value);
+                    if (!IsLocationSearchEnabled) { LocationSearchText = null; }
+                    break;
+
+                case "Description":
+                    IsDescriptionSearchEnabled = !string.IsNullOrWhiteSpace(value);
+                    if (!IsDescriptionSearchEnabled) { DescriptionSearchText = null; }
+                    break;
             }
-            if (display == Display.CalenderByMonth)
-            {
-                IsGridDisplay = false;
-                IsCalenderByMonthDisplay = true;
-                IsCalenderByWeekDisplay = false;
-                IsCalenderBySearchDisplay = false;
-            }
-            if (display == Display.CalendarByWeek)
-            {
-                IsGridDisplay = false;
-                IsCalenderByMonthDisplay = false;
-                IsCalenderByWeekDisplay = true;
-                IsCalenderBySearchDisplay = false;
-            }
-            if (display == Display.CalendarBySearch)
-            {
-                IsGridDisplay = false;
-                IsCalenderByMonthDisplay = false;
-                IsCalenderByWeekDisplay = false;
-                IsCalenderBySearchDisplay = true;
-            }
+
+            await InvokeFilter();
         }
 
         private void SetMode(Mode mode)

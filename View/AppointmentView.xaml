@@ -99,21 +99,140 @@
                     Grid.ColumnSpan="8">
                     <StackPanel Orientation="Vertical">
                         <StackPanel Margin="10" Orientation="Horizontal">
-                            <Label Content="Filter: " />
-                            <ComboBox
-                                MinWidth="90"
-                                MinHeight="25"
-                                FontSize="12"
-                                ItemsSource="{Binding SearchType}"
-                                SelectedValue="{Binding SelectedSearchType, Mode=OneWayToSource, UpdateSourceTrigger=PropertyChanged}" />
-                            <TextBox
-                                MinWidth="125"
-                                MinHeight="25"
-                                Background="AliceBlue"
-                                BorderBrush="Black"
-                                FontSize="12"
-                                IsEnabled="True"
-                                Text="{Binding SelectedSearchText, Mode=OneWayToSource, UpdateSourceTrigger=PropertyChanged}" />
+
+                            <StackPanel>
+                                <Label Content="Filter: " />
+
+
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition />
+                                        <ColumnDefinition />
+                                        <ColumnDefinition />
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition />
+                                        <RowDefinition />
+                                        <RowDefinition />
+                                        <RowDefinition />
+                                        <RowDefinition />
+                                    </Grid.RowDefinitions>
+
+
+                                    <Label
+                                        Grid.Row="0"
+                                        Grid.Column="0"
+                                        Content="CustomerId"
+                                        FontSize="12" />
+                                    <ComboBox
+                                        Grid.Row="0"
+                                        Grid.Column="1"
+                                        MinWidth="50"
+                                        FontSize="12"
+                                        ItemsSource="{Binding SearchOptions}"
+                                        SelectedItem="{Binding CustomerIdSearchOption, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                    <TextBox
+                                        Grid.Row="0"
+                                        Grid.Column="2"
+                                        MinWidth="125"
+                                        Background="AliceBlue"
+                                        BorderBrush="Black"
+                                        FontSize="12"
+                                        IsEnabled="{Binding IsCustomerIdSearchEnabled}"
+                                        Text="{Binding CustomerIdSearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+
+                                    <Label
+                                        Grid.Row="1"
+                                        Grid.Column="0"
+                                        Content="Appointment Type"
+                                        FontSize="12" />
+                                    <ComboBox
+                                        Grid.Row="1"
+                                        Grid.Column="1"
+                                        MinWidth="50"
+                                        FontSize="12"
+                                        ItemsSource="{Binding SearchOptions}"
+                                        SelectedItem="{Binding TypeSearchOption, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                    <TextBox
+                                        Grid.Row="1"
+                                        Grid.Column="2"
+                                        MinWidth="125"
+                                        Background="AliceBlue"
+                                        BorderBrush="Black"
+                                        FontSize="12"
+                                        IsEnabled="{Binding IsTypeSearchEnabled}"
+                                        Text="{Binding TypeSearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+
+                                    <Label
+                                        Grid.Row="2"
+                                        Grid.Column="0"
+                                        Content="Title"
+                                        FontSize="12" />
+                                    <ComboBox
+                                        Grid.Row="2"
+                                        Grid.Column="1"
+                                        MinWidth="50"
+                                        FontSize="12"
+                                        ItemsSource="{Binding SearchOptions}"
+                                        SelectedItem="{Binding TitleSearchOption, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                    <TextBox
+                                        Grid.Row="2"
+                                        Grid.Column="2"
+                                        MinWidth="125"
+                                        Background="AliceBlue"
+                                        BorderBrush="Black"
+                                        FontSize="12"
+                                        IsEnabled="{Binding IsTitleSearchEnabled}"
+                                        Text="{Binding TitleSearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+
+                                    <Label
+                                        Grid.Row="3"
+                                        Grid.Column="0"
+                                        Content="Location"
+                                        FontSize="12" />
+                                    <ComboBox
+                                        Grid.Row="3"
+                                        Grid.Column="1"
+                                        MinWidth="50"
+                                        FontSize="12"
+                                        ItemsSource="{Binding SearchOptions}"
+                                        SelectedItem="{Binding LocationSearchOption, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                    <TextBox
+                                        Grid.Row="3"
+                                        Grid.Column="2"
+                                        MinWidth="125"
+                                        Background="AliceBlue"
+                                        BorderBrush="Black"
+                                        FontSize="12"
+                                        IsEnabled="{Binding IsLocationSearchEnabled}"
+                                        Text="{Binding LocationSearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+
+                                    <Label
+                                        Grid.Row="4"
+                                        Grid.Column="0"
+                                        Content="Description"
+                                        FontSize="12" />
+                                    <ComboBox
+                                        Grid.Row="4"
+                                        Grid.Column="1"
+                                        MinWidth="50"
+                                        FontSize="12"
+                                        ItemsSource="{Binding SearchOptions}"
+                                        SelectedItem="{Binding DescriptionSearchOption, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                    <TextBox
+                                        Grid.Row="4"
+                                        Grid.Column="2"
+                                        MinWidth="125"
+                                        Background="AliceBlue"
+                                        BorderBrush="Black"
+                                        FontSize="12"
+                                        IsEnabled="{Binding IsDescriptionSearchEnabled}"
+                                        Text="{Binding DescriptionSearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                </Grid>
+
+                                <Button Command="{Binding ResetSearchFilterCommand}" Content="Reset Filter" />
+                            </StackPanel>
+
                         </StackPanel>
                         <StackPanel>
                             <DataGrid
@@ -304,7 +423,7 @@
             <TabItem
                 FontSize="20"
                 Header="All Time"
-                IsSelected="{Binding IsGrid}">
+                IsSelected="{Binding IsAllCalendar}">
                 <WrapPanel
                     Grid.Row="3"
                     Grid.Column="2"
@@ -372,7 +491,7 @@
             <TabItem
                 FontSize="20"
                 Header="Modify Appointments"
-                IsSelected="{Binding ModifyAppointmentSelected}">
+                IsSelected="{Binding IsModifyAppointment}">
                 <WrapPanel
                     Grid.Row="3"
                     Grid.Column="2"

@@ -143,6 +143,23 @@
                         Text="{Binding FraudReport}" />
                 </StackPanel>
             </TabItem>
+            <TabItem
+                FontSize="20"
+                Header="Generate Custom Report"
+                IsSelected="{Binding CustomReportSelected}">
+                <StackPanel>
+                    <Label Content="Date Range" />
+                    <CheckBox IsChecked="{Binding IsDateFilter}" />
+                    <DatePicker Name="FromDate" IsEnabled="{Binding IsDateFilter}" />
+                    <DatePicker Name="ToDate" IsEnabled="{Binding IsDateFilter}" />
+                    <ListBox ItemsSource="{Binding Consultants}" />
+                    <TextBlock
+                        Margin="25"
+                        HorizontalAlignment="Center"
+                        FontSize="12"
+                        Text="{Binding CustomReport}" />
+                </StackPanel>
+            </TabItem>
         </TabControl>
     </Grid>
 </UserControl>

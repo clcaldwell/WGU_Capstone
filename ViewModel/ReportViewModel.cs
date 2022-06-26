@@ -15,8 +15,10 @@ namespace Scheduler.ViewModel
     {
         private ObservableCollection<ConsultantReportModel> _consultantReport;
         private bool _consultantReportSelected;
+        private bool _customReportSelected;
         private string _fraudReport;
         private bool _fraudReportSelected;
+        private bool _isDateFilter;
         private ObservableCollection<MonthlyReportModel> _monthlyReport;
         private bool _monthlyReportSelected;
         private object _tabControlSelectedItem;
@@ -97,6 +99,32 @@ namespace Scheduler.ViewModel
             }
         }
 
+        public ObservableCollection<string> Consultants
+        {
+            get
+            {
+                ObservableCollection<string> consultants = new();
+                foreach (var consultant in AllUsers)
+                {
+                    consultants.Add(consultant.UserName);
+                }
+                return consultants;
+            }
+        }
+
+        public bool CustomReportSelected
+        {
+            get => _customReportSelected;
+            set
+            {
+                if (value != _customReportSelected)
+                {
+                    SetProperty(ref _customReportSelected, value);
+                    OnPropertyChanged();
+                }
+            }
+        }
+
         public string FraudReport
         {
             get => _fraudReport;
@@ -161,6 +189,20 @@ namespace Scheduler.ViewModel
             }
         }
 
+        public bool IsDateFilter
+        {
+            get => _isDateFilter;
+            set
+            {
+                if (value != _isDateFilter)
+                {
+                    SetProperty(ref _isDateFilter, value);
+                    OnPropertyChanged();
+                    GenerateMonthlyReport();
+                }
+            }
+        }
+
         private async Task GenerateConsultantSchedule()
         {
             List<ConsultantReportModel> consultantReport = new();
@@ -183,6 +225,10 @@ namespace Scheduler.ViewModel
                     );
                 ConsultantReport = new ObservableCollection<ConsultantReportModel>(consultantReport);
             }
+        }
+
+        private async Task GenerateCustomReport()
+        {
         }
 
         private async Task GenerateFraudReport()
